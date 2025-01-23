@@ -11,10 +11,13 @@ import webserver.response.HTTPResponse;
 import webserver.response.HTTPResponseBody;
 import webserver.response.HTTPResponseHeader;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,31 +53,19 @@ public class UserWriteHandler implements RequestProcessor {
             }
 
             Map<String, String> headers = requestHeader.getHeaders();
-            String contentType = headers.get("content-type");
-            if (!contentType.equals("application/x-www-form-urlencoded")) {
+            String[] contentTypes = headers.get("content-type").split("; boundary=");
+            String contentType = contentTypes[0];
+            String boundary = contentTypes[1];
+
+            if (!contentType.equals("multipart/form-data")) {
                 throw new HTTPExceptions.Error415("Unsupported Media Type " + contentType);
             }
 
-            String[] params = requestBody.getBodyToString().split("&");
-            Map<String, String> paramMap = new HashMap<>();
-            for (String param : params) {
-                String[] keyValue = param.split("=");
-                // 키값에 등호가 있을 경우
-                if (keyValue.length != 2) {
-                    throw new HTTPExceptions.Error400("Unsupported parameter: " + param);
-                }
-                // 키값 중복
-                if (paramMap.containsKey(keyValue[0])) {
-                    throw new HTTPExceptions.Error400("Duplicate key");
-                }
-                paramMap.put(keyValue[0], URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8));
-            }
-            // 잘못된 키값 입력
-            if (paramMap.size() != 1) {
-                throw new HTTPExceptions.Error400("Wrong number of parameters");
-            }
+            // multipart/form-data 파싱
+            Map<String, Object> formData = requestBody.parseMultipartFormData(boundary);
 
-            String content = paramMap.get("content");
+            String content = (String) formData.get("content");
+            HTTPRequestBody.FileData imageFile = (HTTPRequestBody.FileData) formData.get("image");
 
             if (content == null || content.isEmpty()) {
                 throw new HTTPExceptions.Error400("Missing required parameters");
@@ -82,6 +73,16 @@ public class UserWriteHandler implements RequestProcessor {
 
             Article article = new Article(content, userId, userName, LocalTime.now());
             Database.addArticle(article);
+
+            if (imageFile != null) {
+                System.out.println("image: " + Arrays.toString(imageFile.getContent()));
+//                // 파일 저장 로직 (예: 디스크 또는 데이터베이스)
+                System.out.println("FileName: " + imageFile.getFilename());
+                String uploadPath = "/Users/admin/Documents/" + imageFile.getFilename();
+                try (OutputStream os = new FileOutputStream(uploadPath)) {
+                    os.write(imageFile.getContent());
+                }
+            }
 
             responseHeader.setStatusCode(302);
             responseHeader.addHeader("Location", "/index.html");

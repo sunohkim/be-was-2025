@@ -23,14 +23,19 @@
     </header>
     <div class="page">
         <h2 class="page-title">게시글 작성</h2>
-        <form class="form">
+        <form class="form" id="post-form" enctype="multipart/form-data">
             <div class="textfield textfield_size_m">
                 <p class="title_textfield">내용</p>
                 <textarea
                         id="content"
                         class="input_textfield"
                         placeholder="글의 내용을 입력하세요"
+                        name="content"
                 ></textarea>
+            </div>
+            <div class="textfield">
+                <p class="title_textfield">이미지 첨부 (선택 사항)</p>
+                <input type="file" id="image" name="image" accept="image/*" class="input_file"/>
             </div>
             <button
                     id="registration-btn"
@@ -46,24 +51,26 @@
 <script>
     document.getElementById("registration-btn").addEventListener("click", function () {
         const content = document.getElementById("content").value;
+        const imageFile = document.getElementById("image").files[0];
 
         if (!content) {
             alert("내용을 입력하세요.");
             return;
         }
 
-        const url = "/user/write";
+        const formData = new FormData();
+        formData.append("content", content);
 
-        const body = `content=${content}`;
+        if (imageFile) {
+            formData.append("image", imageFile);
+        }
+
+        const url = "/user/write";
 
         // 서버에 요청 전송
         fetch(url, {
             method: "POST",
-            body: body,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Content-Length": body.length.toString(),
-            },
+            body: formData,
         })
             .then(response => {
                 if (response.redirected) {

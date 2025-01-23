@@ -126,8 +126,6 @@
                             throw new HTTPExceptions.Error400("400 Bad Request: Content-Length header mismatch");
                         }
 
-                        logger.debug("Body: {}", new String(body, StandardCharsets.UTF_8));
-
                         requestBody = new HTTPRequestBody(body);
                     }
                     // Todo: Content-Type에 따라 적합한 형태로 body 변환하기

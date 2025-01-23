@@ -8,6 +8,7 @@ public class Article {
     private String authorId;
     private String authorName;
     private LocalTime createTime;
+    private String imageUrl;
 
     public Article(int id, String content, String authorId, String authorName, LocalTime createTime) {
         this.id = id;
@@ -22,6 +23,14 @@ public class Article {
         this.authorId = authorId;
         this.authorName = authorName;
         this.createTime = createTime;
+    }
+
+    public Article(String content, String authorId, String authorName, LocalTime createTime, String imageUrl) {
+        this.content = content;
+        this.authorId = authorId;
+        this.authorName = authorName;
+        this.createTime = createTime;
+        this.imageUrl = imageUrl;
     }
 
     public int getId() {
@@ -42,5 +51,9 @@ public class Article {
 
     public LocalTime getCreateTime() {
         return createTime;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 }

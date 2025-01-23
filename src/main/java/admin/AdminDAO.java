@@ -12,9 +12,12 @@ import java.sql.Statement;
 
 public class AdminDAO {
     public static void main(String[] args) {
+        AdminDAO adminDAO = new AdminDAO();
+
+        adminDAO.createArticleTable();
     }
 
-    private void createTable() {
+    private void createUserTable() {
         String sql = """
                 DROP TABLE IF EXISTS users;
                 CREATE TABLE IF NOT EXISTS users (
@@ -24,7 +27,17 @@ public class AdminDAO {
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255)
                 );
-                
+                """;
+        try (Connection connection = H2Connection.getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(sql);
+        } catch (Exception e) {
+            throw new HTTPExceptions.Error500("refresh table failed");
+        }
+    }
+
+    private void createSessionTable() {
+        String sql = """
                 DROP TABLE IF EXISTS sessions;
                 CREATE TABLE IF NOT EXISTS sessions (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -33,14 +46,25 @@ public class AdminDAO {
                 lastAccessTime TIME NOT NULL,
                 maxInactiveInterval INT NOT NULL
                 );
-                
+                """;
+        try (Connection connection = H2Connection.getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(sql);
+        } catch (Exception e) {
+            throw new HTTPExceptions.Error500("refresh table failed");
+        }
+    }
+
+    private void createArticleTable() {
+        String sql = """
                 DROP TABLE IF EXISTS articles;
                 CREATE TABLE IF NOT EXISTS articles (
                     id INT PRIMARY KEY AUTO_INCREMENT,
                     content VARCHAR(255) NOT NULL,
                     authorId VARCHAR(255) NOT NULL,
                     authorName VARCHAR(255) NOT NULL,
-                    createTime TIME NOT NULL
+                    createTime TIME NOT NULL,
+                    imageUrl VARCHAR(255)
                 );
                 """;
         try (Connection connection = H2Connection.getConnection()) {

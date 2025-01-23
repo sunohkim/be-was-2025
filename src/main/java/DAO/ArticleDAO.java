@@ -10,18 +10,26 @@ import java.sql.Time;
 
 public class ArticleDAO {
     public void addArticle(Article article) {
-        String sql = "INSERT INTO articles (content, authorId, authorName, createTime) VALUES (? ,?, ?, ?)";
+        String sql;
         Connection connection = null;
         try {
             connection = H2Connection.getConnection();
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
+            if (article.getImageUrl() == null) {
+                sql = "INSERT INTO articles (content, authorId, authorName, createTime) VALUES (? ,?, ?, ?)";
+            } else {
+                sql = "INSERT INTO articles (content, authorId, authorName, createTime, imageUrl) VALUES (?, ?, ?, ?, ?)";
+            }
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, article.getContent());
                 preparedStatement.setString(2, article.getAuthorId());
                 preparedStatement.setString(3, article.getAuthorName());
                 preparedStatement.setTime(4, Time.valueOf(article.getCreateTime()));
+                if (article.getImageUrl() != null) {
+                    preparedStatement.setString(5, article.getImageUrl());
+                }
                 preparedStatement.executeUpdate();
             }
 
