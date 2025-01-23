@@ -10,7 +10,7 @@ import webserver.HTTPExceptions;
 import java.sql.Connection;
 import java.sql.Statement;
 
-public class adminDAO {
+public class AdminDAO {
     public static void main(String[] args) {
     }
 
